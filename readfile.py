@@ -33,7 +33,7 @@ def read_file(file_path):
     # Display the resulting dataframe
     # print(f"Encoded Employee data : \n{df_encoded}")
     temp = df_encoded.drop('Heating Load', axis=1)
-    x = np.array(temp).flatten(order='F')
+    x = np.array(temp)
     y = df_encoded['Heating Load']
     
     return x,y
