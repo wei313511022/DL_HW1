@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+
+
 def one_hot_encode(data,name):
     
     max_val = int(max(data))
@@ -20,7 +22,8 @@ def one_hot_encode(data,name):
     return encode
     
 
-def read_file(file_path):
+def read_file(file_path, train_ratio):
+    np.random.seed()
     data = pd.read_csv(file_path)
 
     #Converting into a Pandas dataframe
@@ -40,8 +43,16 @@ def read_file(file_path):
 
     # Display the resulting dataframe
     # print(f"Encoded Employee data : \n{df_encoded}")
-    x = df_encoded.drop('Heating Load', axis=1)
-    y = df_encoded['Heating Load']
+    x = np.array(df_encoded.drop('Heating Load', axis=1))
+    y = np.array(df_encoded['Heating Load'])
+    permutation = np.random.permutation(len(y))
+    train_size = int(train_ratio * len(y))
+    train_indices = permutation[:train_size]
+    test_indices = permutation[train_size:]
+    x_train = x[train_indices]
+    y_train = y[train_indices].reshape(train_size,1)
+    x_test = x[test_indices]  
+    y_test = y[test_indices].reshape(len(y)-train_size,1)
     
-    return x,y
+    return x_train,y_train,x_test,y_test
 

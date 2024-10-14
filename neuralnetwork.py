@@ -1,108 +1,101 @@
 import numpy as np
-import csv
 
-np.random.seed(42)
-# The rest of the neural network code remains the same
-def sigmoid(z):
-    return 1 / (1 + np.exp(-z))
+# ReLU activation function and its derivative
+def relu(x):
+    return np.maximum(0, x)
 
-def sigmoid_derivative(z):
-    return sigmoid(z) * (1 - sigmoid(z))
+def relu_derivative(x):
+    return np.where(x > 0, 1, 0)
 
-def initialize_parameters(layer_sizes):
-    parameters = {}
-    L = len(layer_sizes)
-    
-    for l in range(1, L):
-        parameters['W' + str(l)] = np.random.randn(layer_sizes[l], layer_sizes[l-1]) 
-        parameters['b' + str(l)] = np.zeros((layer_sizes[l], 1))
-    
-    return parameters
-
-def forward_propagation(X, parameters):
-    L = len(parameters) // 2
-    caches = {'A0': X}
-    
-    A = X
-    for l in range(1, L + 1):
-        W = parameters['W' + str(l)]
-        b = parameters['b' + str(l)]
+# Define the neural network class with more layers
+class DeepNeuralNetwork:
+    def __init__(self, input_size, hidden_sizes, output_size):
+        # Initialize weights and biases for multiple layers
+        self.weights = []
+        self.biases = []
         
-        Z = np.dot(W, A) + b
-        A = sigmoid(Z)
+        # Create weights and biases for each layer
+        layer_sizes = [input_size] + hidden_sizes + [output_size]
+        for i in range(len(layer_sizes) - 1):
+            self.weights.append(np.random.rand(layer_sizes[i], layer_sizes[i + 1]) )
+            self.biases.append(np.random.rand(layer_sizes[i + 1]) )
+
+    def forward(self, X):
+        self.layer_inputs = []
+        self.layer_outputs = []
         
-        caches['Z' + str(l)] = Z
-        caches['A' + str(l)] = A
-    
-    return A, caches
-
-def compute_loss(Y, Y_hat):
-    m = Y.shape[1]
-    loss = -1/m * np.sum(Y * np.log(Y_hat) + (1 - Y) * np.log(1 - Y_hat))
-    return np.squeeze(loss)
-
-def backward_propagation(Y, parameters, caches):
-    gradients = {}
-    L = len(parameters) // 2
-    m = Y.shape[1]
-    
-    A_final = caches['A' + str(L)]
-    dA = - (np.divide(Y, A_final) - np.divide(1 - Y, 1 - A_final))
-    
-    for l in reversed(range(1, L + 1)):
-        dZ = dA * sigmoid_derivative(caches['Z' + str(l)])
-        dW = 1/m * np.dot(dZ, caches['A' + str(l-1)].T)
-        db = 1/m * np.sum(dZ, axis=1, keepdims=True)
-        dA = np.dot(parameters['W' + str(l)].T, dZ)
+        # Forward propagation through each layer
+        current_output = X
+        for i in range(len(self.weights) - 1):
+            layer_input = np.dot(current_output, self.weights[i]) + self.biases[i]
+            self.layer_inputs.append(layer_input)
+            current_output = relu(layer_input)
+            self.layer_outputs.append(current_output)
         
-        gradients['dW' + str(l)] = dW
-        gradients['db' + str(l)] = db
-    
-    return gradients
-
-def update_parameters(parameters, gradients, learning_rate):
-    L = len(parameters) // 2
-    
-    for l in range(1, L + 1):
-        parameters['W' + str(l)] -= learning_rate * gradients['dW' + str(l)]
-        parameters['b' + str(l)] -= learning_rate * gradients['db' + str(l)]
-    
-    return parameters
-
-def mini_batch_SGD(X, Y, layers, learning_rate, epochs, batch_size):
-    parameters = initialize_parameters(layers)
-    m = X.shape[0]  # number of training examples
-    
-    for epoch in range(epochs):
-        permutation = np.random.permutation(m)
-        X_shuffled = X[permutation, :]
-        Y_shuffled = Y[permutation, :]
+        # Last layer (output layer)
+        final_input = np.dot(current_output, self.weights[-1]) + self.biases[-1]
+        self.layer_inputs.append(final_input)
+        final_output = relu(final_input)  # Use ReLU for simplicity; can also use other activation
+        self.layer_outputs.append(final_output)
         
-        for i in range(0, m, batch_size):
-            X_batch = X_shuffled[i:i+batch_size, :]
-            Y_batch = Y_shuffled[i:i+batch_size, :]
+        return final_output
+
+    def backward(self, X, y, output, learning_rate):
+        # Error at the output
+        error= y - output
+        
+        print(f"error size {error.shape}")
+        
+        # Backpropagate the error
+        d_output = error * relu_derivative(output)
+        deltas = [d_output]
+        
+        # Backpropagate through each layer
+        for i in reversed(range(len(self.weights) - 1)):
+            error_hidden = deltas[-1].dot(self.weights[i + 1].T)
+            d_hidden = error_hidden * relu_derivative(self.layer_outputs[i])
+            deltas.append(d_hidden)
+        
+        # Reverse deltas to match the forward pass order
+        deltas.reverse()
+        
+        # Update weights and biases
+        current_input = X
+        for i in range(len(self.weights)):
+            self.weights[i] += current_input.T.dot(deltas[i]) * learning_rate
+            self.biases[i] += np.sum(deltas[i], axis=0) * learning_rate
+            current_input = self.layer_outputs[i]
+
+    def train(self, X, y, epochs, learning_rate):
+        for epoch in range(epochs):
+            # Forward pass
+            output = self.forward(X)
             
-            # Forward propagation
-            Y_hat, caches = forward_propagation(X_batch, parameters)
+            # Backward pass and weight update
+            self.backward(X, y, output, learning_rate)
             
-            # Compute the loss (optional to print during training)
-            loss = compute_loss(Y_batch, Y_hat)
-            
-            # Backward propagation
-            gradients = backward_propagation(Y_batch, parameters, caches)
-            
-            # Update parameters
-            parameters = update_parameters(parameters, gradients, learning_rate)
-        
-        if epoch % 10 == 0:
-            print(f'Epoch {epoch}, Loss: {loss}')
-    
-    return parameters
+            # Print loss for every 1000 epochs
+            if epoch % 1000 == 0:
+                loss = np.sqrt(np.mean(np.square(y - output)))
+                print(f"Epoch {epoch}, Loss: {loss}")
 
-# Example usage
+# # Example Usage:
+# # Replace with your actual data (576 samples with 17 features)
+# X = np.random.rand(576, 17)
+# y = np.random.randint(2, size=(576, 1))
 
+# # Define the network dimensions
+# input_size = 17
+# hidden_sizes = [32, 16, 8]  # More hidden layers with different sizes
+# output_size = 1
 
+# # Create the neural network
+# nn = DeepNeuralNetwork(input_size, hidden_sizes, output_size)
 
-# Define the architecture of the neural network
-# layers = [X.shape[0], 64, 32, 1]  # Input -> 64 hidden -> 32 hidden -> Output
-# trained_parameters = mini_batch_SGD(X, Y, layers, learning_rate=0.01, epochs=100, batch_size=32)
+# # Train the neural network
+# nn.train(X, y, epochs=10000, learning_rate=0.01)
+
+# # Test the network
+# output = nn.forward(X)
+# print("Predicted Output:")
+# print(output)
