@@ -19,7 +19,7 @@ print(f"y_test :\n {y_test.shape}")
 
 # Define the network
 input_size = 17
-hidden_size = [75,8]
+hidden_size = [75]
 output_size = 1
 
 # Create the neural network
