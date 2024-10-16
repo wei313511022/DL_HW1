@@ -42,7 +42,7 @@ class DeepNeuralNetwork:
 
     def backward(self, X, y, output, learning_rate):
         # Error at the output
-        error= y - output
+        error= np.mean(y - output)
         
         print(f"error size {error.shape}")
         
