@@ -70,5 +70,5 @@ def read_file(file_path, train_ratio):
     y_test_std = np.std(y_test, axis=0)
     y_test_standardized = (y_test - y_test_mean) / y_test_std
     
-    return x_train_standardized,y_train,x_test_standardized,y_test,x_test_mean,x_test_std
+    return x_train_standardized,y_train_standardized,x_test_standardized,y_test_standardized,y_train_mean,y_train_std,y_test_mean,y_test_std
 

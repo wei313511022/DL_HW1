@@ -42,9 +42,9 @@ class DeepNeuralNetwork:
         
         return final_output
 
-    def backward(self, X, y, output, learning_rate):
+    def backward(self, x, y, output, learning_rate):
         # Error at the output
-        error= np.mean(y - output)
+        
         
         # Derivative of the loss with respect to the output
         d_loss_output = -2 * (y - output)
@@ -79,17 +79,21 @@ class DeepNeuralNetwork:
             a = np.squeeze(d_biases[i])
             self.biases[i] -= learning_rate * a
         
-        return loss
-    def train(self, X, y, epochs, learning_rate):
+    def train(self, X, y, epochs, learning_rate, y_train_mean, y_train_std):
+        self.learning_rate = learning_rate
+        loss_record = []
         for epoch in range(epochs):
             # Forward pass
             output = self.forward(X)
             
             # Backward pass and weight update
-            self.backward(X, y, output, learning_rate)
-            
+            self.backward(X, y, output, self.learning_rate)
+            loss = (np.sum(np.square((y - output)*y_train_std)))
+            loss_record.append(loss)
             # Print loss for every 1000 epochs
-            if epoch % 100 == 0:
-                loss = np.sqrt(np.mean(np.square(y - output)))
+            if epoch % 1000 == 0:
                 print(f"Epoch {epoch}, Loss: {loss}")
-
+            
+            # if epoch % 10000 == 0:
+            #     self.learning_rate = self.learning_rate*0.5
+        return loss_record
