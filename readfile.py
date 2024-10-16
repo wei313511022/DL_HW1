@@ -49,10 +49,26 @@ def read_file(file_path, train_ratio):
     train_size = int(train_ratio * len(y))
     train_indices = permutation[:train_size]
     test_indices = permutation[train_size:]
-    x_train = x[train_indices]
-    y_train = y[train_indices].reshape(train_size,1)
-    x_test = x[test_indices]  
-    y_test = y[test_indices].reshape(len(y)-train_size,1)
     
-    return x_train,y_train,x_test,y_test
+    x_train = x[train_indices]
+    x_train_mean = np.mean(x_train, axis=0)
+    x_train_std = np.std(x_train, axis=0)
+    x_train_standardized = (x_train - x_train_mean) / x_train_std
+    
+    y_train = y[train_indices].reshape(train_size,1)
+    y_train_mean = np.mean(y_train, axis=0)
+    y_train_std = np.std(y_train, axis=0)
+    y_train_standardized = (y_train - y_train_mean) / y_train_std
+    
+    x_test = x[test_indices]  
+    x_test_mean = np.mean(x_test, axis=0)
+    x_test_std = np.std(x_test, axis=0)
+    x_test_standardized = (x_test - x_test_mean) / x_test_std
+    
+    y_test = y[test_indices].reshape(len(y)-train_size,1)
+    y_test_mean = np.mean(y_test, axis=0)
+    y_test_std = np.std(y_test, axis=0)
+    y_test_standardized = (y_test - y_test_mean) / y_test_std
+    
+    return x_train_standardized,y_train,x_test_standardized,y_test,x_test_mean,x_test_std
 
