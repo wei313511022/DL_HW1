@@ -1,5 +1,5 @@
-import readfile as rd
-import neuralnetwork as nn
+import part1.readfile as rd
+import part1.neuralnetwork as nn
 import numpy as np 
 import matplotlib.pyplot as plt
 
