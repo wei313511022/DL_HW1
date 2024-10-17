@@ -67,19 +67,27 @@ class SimpleNeuralNetwork:
                 # Calculate delta for the next layer back
                 delta = np.dot(delta, self.weights[i].T) * self.relu_derivative(self.layer_inputs[i - 1])
     
-    def train(self, X, y, epochs, learning_rate):
+    def train(self, X, y, epochs, learning_rate, batch_size):
+        m = X.shape[0]
         loss_record = []
+        
         for epoch in range(epochs):
-            # Forward pass
-            y_pred,numb = self.forward(X)
+            indices = np.arange(m)
+            np.random.shuffle(indices)
+            X_shuffled = X[indices]
+            y_shuffled = y[indices]
+            for i in range(0, m, batch_size):
+                X_batch = X_shuffled[i:i + batch_size]
+                y_batch = y_shuffled[i:i + batch_size]
+                # Forward pass
+                y_pred,numb = self.forward(X_batch)
             
-            # Calculate loss
+                # Backward pass
+                self.backward(X_batch, y_batch, y_pred, learning_rate)
+            
+            y_pred,numb = self.forward(X)
             loss = self.cross_entropy_loss(y, y_pred)
             loss_record.append(loss)
-            
-            # Backward pass
-            self.backward(X, y, y_pred, learning_rate)
-            
             # Print loss every 100 epochs
             if epoch % 100 == 0:
                 print(f'Epoch {epoch} - Loss: {loss:.4f}')

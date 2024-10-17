@@ -79,21 +79,35 @@ class DeepNeuralNetwork:
             a = np.squeeze(d_biases[i])
             self.biases[i] -= learning_rate * a
         
-    def train(self, X, y, epochs, learning_rate, y_train_mean, y_train_std):
-        self.learning_rate = learning_rate
+    def train(self, X, y, epochs, learning_rate, batch_size, y_train_mean, y_train_std):
+        m = X.shape[0]  # Number of samples
         loss_record = []
+        
         for epoch in range(epochs):
-            # Forward pass
-            output = self.forward(X)
+            # Shuffle the data at the start of each epoch
+            indices = np.arange(m)
+            np.random.shuffle(indices)
+            X_shuffled = X[indices]
+            y_shuffled = y[indices]
             
-            # Backward pass and weight update
-            self.backward(X, y, output, self.learning_rate)
-            loss = (np.sum(np.square((y - output)*y_train_std)))
+            for i in range(0, m, batch_size):
+                # Get mini-batch
+                X_batch = X_shuffled[i:i + batch_size]
+                y_batch = y_shuffled[i:i + batch_size]
+                
+                # Forward pass
+                output = self.forward(X_batch)
+                
+                # Backward pass and weight update
+                self.backward(X_batch, y_batch, output, learning_rate)
+                
+            # Compute loss for the entire dataset after each epoch
+            output_full = self.forward(X)
+            loss = np.sum(np.square((y - output_full) * y_train_std))
             loss_record.append(loss)
+            
             # Print loss for every 1000 epochs
             if epoch % 1000 == 0:
                 print(f"Epoch {epoch}, Loss: {loss}")
-            
-            # if epoch % 10000 == 0:
-            #     self.learning_rate = self.learning_rate*0.5
+
         return loss_record

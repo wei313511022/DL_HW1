@@ -22,10 +22,10 @@ def one_hot_encode(data,name):
     return encode
     
 
-def read_file(file_path, train_ratio):
+def read_file(file_path, train_ratio, drop):
     np.random.seed()
     data = pd.read_csv(file_path)
-
+    
     #Converting into a Pandas dataframe
     df = pd.DataFrame(data)
     #Print the dataframe:
@@ -33,7 +33,20 @@ def read_file(file_path, train_ratio):
 
     #Extract categorical columns from the dataframe
     #Here we extract the columns with object datatype as they are the categorical columns
+    
     categorical_columns = ['Orientation','Glazing Area Distribution']
+    drop_columns = []
+    for i in drop:
+        drop_columns.append(df.columns[i])
+        
+        if i == 5 :
+            categorical_columns.remove('Orientation')
+        if i == 7 :
+            categorical_columns.remove('Glazing Area Distribution')
+    
+    df = df.drop(drop_columns, axis=1)
+    print(df.head)
+    
     
     for i in categorical_columns:
         encode = one_hot_encode(df[i],i)
@@ -43,7 +56,7 @@ def read_file(file_path, train_ratio):
 
     # Display the resulting dataframe
     # print(f"Encoded Employee data : \n{df_encoded}")
-    x = np.array(df_encoded.drop('Heating Load', axis=1))
+    x = np.array(df_encoded.drop(['Heating Load','Cooling Load'], axis=1))
     y = np.array(df_encoded['Heating Load'])
     permutation = np.random.permutation(len(y))
     train_size = int(train_ratio * len(y))
