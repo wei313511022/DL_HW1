@@ -25,7 +25,7 @@ output_size = 1
 
 # Create the neural network
 network = nn.DeepNeuralNetwork(input_size, hidden_size, output_size)
-epochs=10000
+epochs=50000
 learning_rate=0.001
 # Train the neural network
 loss_record = network.train(x_train, y_train, epochs, learning_rate, y_train_mean, y_train_std)
