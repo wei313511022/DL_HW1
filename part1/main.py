@@ -1,5 +1,5 @@
-import part1.readfile as rd
-import part1.neuralnetwork as nn
+import readfile as rd
+import neuralnetwork as nn
 import numpy as np 
 import matplotlib.pyplot as plt
 
@@ -30,27 +30,39 @@ learning_rate=0.001
 # Train the neural network
 loss_record = network.train(x_train, y_train, epochs, learning_rate, y_train_mean, y_train_std)
 
-# Test the network
-# print(x_test[0].reshape(1,17)*x_test_std+x_test_mean)
-output = network.forward(x_test)*y_test_std+y_test_mean
-y = y_test*y_test_std+y_test_mean
-# print(network.weights)
-# print("Predicted Output:")
-# print(output)
-numbers = range(1,193)
+output_train = network.forward(x_train)*y_train_std+y_train_mean
+y_train_original = y_train*y_train_std+y_train_mean
 
-plt.plot(numbers, output, color = 'red', label = 'predict')
-plt.plot(numbers, y, color = 'blue', label = 'y_test')
+output_test = network.forward(x_test)*y_test_std+y_test_mean
+y_test_original = y_test*y_test_std+y_test_mean
+
+test_ERMS = np.sqrt((np.sum(np.square(y_test_original-output_test)))/192)
+
+print(f"training ERMS: {loss_record[-1]/596} \ntest ERMS: {test_ERMS}")
+
+
+numbers = range(1,577)
+plt.plot(numbers, y_train_original, color = 'blue', label = 'y_train')
+plt.plot(numbers, output_train, color = 'red', label = 'predict')
 plt.xlabel('case')
 plt.ylabel('Heating Load')
-plt.title('Predict') 
+plt.title('Train Predict') 
+plt.legend()
+plt.show()
+
+numbers = range(1,193)
+plt.plot(numbers, y_test_original, color = 'blue', label = 'y_test')
+plt.plot(numbers, output_test, color = 'red', label = 'predict')
+plt.xlabel('case')
+plt.ylabel('Heating Load')
+plt.title('Test Predict') 
 plt.legend()
 plt.show()
 
 numbers = range(1,epochs+1)
 plt.plot(numbers, loss_record, color = 'blue', label = 'loss')
 plt.xlabel('epoches')
-plt.ylabel('ERM')
+plt.ylabel('E')
 plt.title('Loss') 
 plt.legend()
 plt.show()
