@@ -68,12 +68,14 @@ class SimpleNeuralNetwork:
                 delta = np.dot(delta, self.weights[i].T) * self.relu_derivative(self.layer_inputs[i - 1])
     
     def train(self, X, y, epochs, learning_rate):
+        loss_record = []
         for epoch in range(epochs):
             # Forward pass
             y_pred = self.forward(X)
             
             # Calculate loss
             loss = self.cross_entropy_loss(y, y_pred)
+            loss_record.append(loss)
             
             # Backward pass
             self.backward(X, y, y_pred, learning_rate)
@@ -81,3 +83,4 @@ class SimpleNeuralNetwork:
             # Print loss every 100 epochs
             if epoch % 100 == 0:
                 print(f'Epoch {epoch} - Loss: {loss:.4f}')
+        return loss_record

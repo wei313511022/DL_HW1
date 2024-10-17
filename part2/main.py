@@ -11,6 +11,8 @@ x_train_standardized,y_train,x_test_standardized,y_test = rd.read_file(file,trai
 input_size = 33  # Number of input features
 hidden_layers = [64, 32]  # Two hidden layers
 output_size = 2  # Two classes for binary classification
+epochs=10000
+learning_rate=0.01
 
 # Create random data for training (X: features, y: one-hot encoded labels)
 
@@ -21,7 +23,7 @@ y_train = y_train.astype(np.float64)
 network = nn.SimpleNeuralNetwork(input_size, hidden_layers, output_size)
 
 # Train the network
-network.train(x_train_standardized, y_train, epochs=1000, learning_rate=0.01)
+loss_record = network.train(x_train_standardized, y_train, epochs, learning_rate)
 
 y_predict = np.array(network.forward(x_test_standardized))
 y_predict = (y_predict >= 0.5).astype(float)
@@ -29,9 +31,16 @@ j = 0
 error = 0
 
 for i in range(71):
-    
     if y_test[j][0] != y_predict[j][0]:
         print(f"{y_test[j][0]}   {y_predict[j][0]}")
         error += 1
     j +=1
-print(f"error: {error/71}")
+print(f"test error rate: {error/71}")
+
+numbers = range(1,epochs+1)
+plt.plot(numbers, loss_record, color = 'blue', label = 'loss')
+plt.xlabel('epoches')
+plt.ylabel('cross-entropy')
+plt.title('Loss') 
+plt.legend()
+plt.show()
