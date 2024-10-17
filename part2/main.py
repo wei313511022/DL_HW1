@@ -11,8 +11,8 @@ x_train_standardized,y_train,x_test_standardized,y_test = rd.read_file(file,trai
 input_size = 33  # Number of input features
 hidden_layers = [64, 32]  # Two hidden layers
 output_size = 2  # Two classes for binary classification
-epochs=10000
-learning_rate=0.01
+epochs = 10000
+learning_rate = 0.01
 
 # Create random data for training (X: features, y: one-hot encoded labels)
 
@@ -25,7 +25,22 @@ network = nn.SimpleNeuralNetwork(input_size, hidden_layers, output_size)
 # Train the network
 loss_record = network.train(x_train_standardized, y_train, epochs, learning_rate)
 
-y_predict = np.array(network.forward(x_test_standardized))
+y_predict,z_final = network.forward(x_test_standardized)
+red_points = []
+blue_points = []
+for i in range(71):
+    if y_test[i][0] == 1:
+        red_points.append((z_final.T[0][i],z_final.T[1][i]))
+    else:
+        blue_points.append((z_final.T[0][i],z_final.T[1][i]))
+red_points = np.array(red_points)
+blue_points = np.array(blue_points)
+plt.scatter(red_points[:, 0], red_points[:, 1], c='red', label='Class 1')
+plt.scatter(blue_points[:, 0], blue_points[:, 1], c='blue', label='Class 0')
+plt.legend()
+plt.show()
+
+
 y_predict = (y_predict >= 0.5).astype(float)
 j = 0
 error = 0
@@ -44,3 +59,4 @@ plt.ylabel('cross-entropy')
 plt.title('Loss') 
 plt.legend()
 plt.show()
+

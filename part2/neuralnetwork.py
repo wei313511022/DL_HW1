@@ -42,7 +42,7 @@ class SimpleNeuralNetwork:
         output = self.softmax(z_final)
         self.layer_activations.append(output)
         
-        return output
+        return output,z_final
 
     def cross_entropy_loss(self, y_true, y_pred):
         n_samples = y_true.shape[0]
@@ -71,7 +71,7 @@ class SimpleNeuralNetwork:
         loss_record = []
         for epoch in range(epochs):
             # Forward pass
-            y_pred = self.forward(X)
+            y_pred,numb = self.forward(X)
             
             # Calculate loss
             loss = self.cross_entropy_loss(y, y_pred)
