@@ -9,9 +9,9 @@ train_ratio = 0.8
 x_train_standardized,y_train,x_test_standardized,y_test = rd.read_file(file,train_ratio)
 
 input_size = 33  # Number of input features
-hidden_layers = [64, 8]  # Two hidden layers
+hidden_layers = [64, 4]  # Two hidden layers
 output_size = 2  # Two classes for binary classification
-epochs = 10000
+epochs = 50
 learning_rate = 0.01
 batch_size = 280
 
@@ -26,11 +26,34 @@ network = nn.SimpleNeuralNetwork(input_size, hidden_layers, output_size)
 # Train the network
 loss_record = network.train(x_train_standardized, y_train, epochs, learning_rate, batch_size)
 
+numbers = range(1,epochs+1)
+plt.plot(numbers, loss_record, color = 'blue', label = 'loss')
+plt.xlabel('epoches')
+plt.ylabel('cross-entropy')
+plt.title('Loss') 
+plt.legend()
+plt.show()
+
 y_predict,z_final = network.forward(x_test_standardized)
+y_predict = (y_predict >= 0.5).astype(float)
+j = 0
+error = 0
+
+for i in range(71):
+    if y_test[j][0] != y_predict[j][0]:
+        # print(f"{y_test[j][0]}   {y_predict[j][0]}")
+        error += 1
+    j +=1
+print(f"test error rate: {error/71}")
+
+
+
+y_predict,z_final = network.forward(x_train_standardized)
+
 red_points = []
 blue_points = []
-for i in range(71):
-    if y_test[i][0] == 1:
+for i in range(280):
+    if y_train[i][0] == 1:
         red_points.append((z_final.T[0][i],z_final.T[1][i]))
     else:
         blue_points.append((z_final.T[0][i],z_final.T[1][i]))
@@ -42,36 +65,14 @@ plt.title(f"nodes: {hidden_layers[1]} epoch: {epochs}")
 plt.legend()
 plt.show()
 
-
-y_predict = (y_predict >= 0.5).astype(float)
-j = 0
-error = 0
-
-for i in range(71):
-    if y_test[j][0] != y_predict[j][0]:
-        print(f"{y_test[j][0]}   {y_predict[j][0]}")
-        error += 1
-    j +=1
-print(f"test error rate: {error/71}")
-
-numbers = range(1,epochs+1)
-plt.plot(numbers, loss_record, color = 'blue', label = 'loss')
-plt.xlabel('epoches')
-plt.ylabel('cross-entropy')
-plt.title('Loss') 
-plt.legend()
-plt.show()
-
-y_predict,z_final = network.forward(x_train_standardized)
 y_predict = (y_predict >= 0.5).astype(float)
 j = 0
 error = 0
 
 for i in range(280):
-    print(f"{y_train[j][0]}   {y_predict[j][0]}")
+    # print(f"{y_train[j][0]}   {y_predict[j][0]}")
     if y_train[j][0] != y_predict[j][0]:
         
         error += 1
     j +=1
 print(f"y_train error rate: {error/280}")
-
